@@ -1,9 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { HttpException, Injectable, HttpStatus } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
+import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
@@ -25,8 +24,22 @@ export class UsersService {
       dateOfBirth,
       profilePicture,
     } = createUserDto;
+    const dateOfBirthWithTime = `${dateOfBirth}T00:00:00.000Z`;
     try {
-      return this.prisma.user.create({
+      // check if user with email already exists
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: createUserDto.email },
+      });
+
+      const existingUsername = await this.prisma.user.findUnique({
+        where: { username: createUserDto.username },
+      });
+
+      if (existingUser || existingUsername) {
+        throw new HttpException('User already exists', HttpStatus.CONFLICT);
+      }
+
+      this.prisma.user.create({
         data: {
           email,
           password,
@@ -40,7 +53,7 @@ export class UsersService {
               address,
             },
           },
-          dateOfBirth,
+          dateOfBirth: dateOfBirthWithTime,
           avatar: profilePicture,
         },
       });
@@ -63,7 +76,6 @@ export class UsersService {
       return error;
     }
   }
-
   //   get user by email
   async getUserByEmail(email: string): Promise<User> {
     try {
@@ -132,6 +144,24 @@ export class UsersService {
         },
       });
       return deleltedUser;
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  }
+
+  // delelte all users and return the number of users deleted, total number of users left
+  async deleteAllUsers(): Promise<{
+    deletedUsers: number;
+    remainingUsers: number;
+  }> {
+    try {
+      const allUsers = await this.prisma.user.findMany();
+      const deletedUsers = await this.prisma.user.deleteMany();
+      return {
+        deletedUsers: deletedUsers.count,
+        remainingUsers: allUsers.length - deletedUsers.count,
+      };
     } catch (error) {
       console.log(error);
       return error;
