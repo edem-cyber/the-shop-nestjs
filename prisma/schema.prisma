@@ -1,0 +1,396 @@
+// prisma schema for uber eats clone
+// 1. User
+// 2. Shop
+// 3. Category
+// 4. ClothingItem
+// 5. Order
+// 6. OrderItem
+// 7. Payment
+// 8. Address
+// 9. Cart
+// 10. CartItem
+// 11. Favourite
+// 12. Like
+// 13. Comment
+// 14. Notification
+// 15. Message
+// 17. Payment
+// 18. OrderStatus
+// 19. ClothingItemOption
+// 20. Review
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  OWNER
+  ADMIN
+  RIDER
+}
+
+enum OrderStatus {
+  PENDING
+  COOKING
+  COOKED
+  PICKEDUP
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  createdAt           DateTime             @default(now())
+  lastSeen            DateTime             @updatedAt
+  email               String               @unique
+  username            String               @unique
+  firstName           String
+  lastName            String
+  password            String
+  phoneNumber         String?
+  isVerified          Boolean              @default(false)
+  bio                 String?
+  avatar              String?
+  fbId                String?
+  googleId            String?
+  appleId             String?
+  dateOfBirth         DateTime?
+  address             Address[]
+  role                UserRole             @default(USER)
+  shops               Shop[]
+  orders              Order[]
+  carts               Cart[]
+  favourites          Favourite[]
+  likes               ClothingItemLike[]
+  comments            Comment[]
+  notifications       Notification[]
+  messages            Message[]
+  payments            Payment[]
+  riderReviews        RiderReview[]
+  clothingItemReviews ClothingItemReview[]
+  shopReviews         ShopReview[]
+  riderRating         RiderRating[]
+  clothingItemRating  ClothingItemRating[]
+  riderProfile        RiderProfile?
+  riderProfileId      Int?
+  ShopRating          ShopRating[]
+}
+
+model RiderProfile {
+  id        Int           @id @default(autoincrement())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String        @unique
+  vehicle   String
+  plate     String
+  license   String
+  rating    RiderRating[]
+  reviews   RiderReview[]
+  orders    Order[]
+
+  messages Message[]
+}
+
+model Shop {
+  id                 Int               @id @default(autoincrement())
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  name               String
+  coverImg           String
+  address            String
+  category           ShopCategory[]
+  categoryId         Int
+  owner              User              @relation(fields: [ownerId], references: [id])
+  ownerId            String            @unique
+  favourites         Favourite[]
+  menu               ClothingItem[]
+  orders             Order[]
+  reviews            ShopReview[]
+  rating             ShopRating[]
+  ClothingCategory   ClothingCategory? @relation(fields: [clothingCategoryId], references: [id])
+  clothingCategoryId Int?
+}
+
+model ClothingCategory {
+  id        Int            @id @default(autoincrement())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  name      String
+  clothes   ClothingItem[]
+
+  coverImg String
+  shops    Shop[]
+}
+
+model ClothingItem {
+  id                 Int                  @id @default(autoincrement())
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  name               String
+  description        String
+  price              Float
+  photo              String
+  shop               Shop                 @relation(fields: [shopId], references: [id])
+  shopId             Int
+  cart               CartItem[]
+  options            ClothingItemOption[]
+  orders             OrderItem[]
+  reviews            ClothingItemReview[]
+  likes              ClothingItemLike[]
+  categories         ClothingCategory[]
+  ratingId           Int
+  Comment            Comment[]
+  ClothingItemRating ClothingItemRating[]
+}
+
+model ShopCategory {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  coverImg  String
+  shops     Shop[]
+}
+
+model Order {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  total          Float
+  status         OrderStatus
+  user           User          @relation(fields: [userId], references: [id])
+  userId         String        @unique
+  shop           Shop          @relation(fields: [shopId], references: [id])
+  shopId         Int
+  items          OrderItem[]
+  payment        Payment[]
+  RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
+  riderProfileId Int?
+}
+
+model OrderItem {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  quantity       Int
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+  order          Order        @relation(fields: [orderId], references: [id])
+  orderId        Int
+}
+
+model Payment {
+  id        Int            @id @default(autoincrement())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  total     Float
+  status    PaymentStatus?
+  type      PaymentType?
+  user      User           @relation(fields: [userId], references: [id])
+  userId    String         @unique
+  order     Order          @relation(fields: [orderId], references: [id])
+  orderId   Int
+}
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  address   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String     @unique
+  items     CartItem[]
+}
+
+model CartItem {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  quantity       Int
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+  cart           Cart         @relation(fields: [cartId], references: [id])
+  cartId         Int
+}
+
+model Favourite {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  shopId    Int
+}
+
+model ClothingItemLike {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @unique
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+}
+
+model Comment {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  text           String
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @unique
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  text      String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+}
+
+model Message {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  text           String
+  user           User          @relation(fields: [userId], references: [id])
+  userId         String        @unique
+  roomId         Int
+  RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
+  riderProfileId Int?
+}
+
+model ClothingItemOption {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  name           String
+  extra          Float
+  choices        Choice[]
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+}
+
+model Choice {
+  id                   Int                @id @default(autoincrement())
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  name                 String
+  price                Float
+  clothingItemOption   ClothingItemOption @relation(fields: [clothingItemOptionId], references: [id])
+  clothingItemOptionId Int
+}
+
+model RiderReview {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  text           String
+  rating         Float
+  user           User          @relation(fields: [userId], references: [id])
+  userId         String        @unique
+  RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
+  riderProfileId Int?
+}
+
+model ClothingItemReview {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  text           String
+  rating         Float
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @unique
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+}
+
+model ShopReview {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  text      String
+  rating    Float
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  shopId    Int
+}
+
+model RiderRating {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  rating         Float
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @unique
+  RiderProfile   RiderProfile @relation(fields: [riderProfileId], references: [id])
+  riderProfileId Int
+}
+
+model ClothingItemRating {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  rating         Float
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @unique
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+}
+
+model ShopRating {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rating    Float
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  shopId    Int
+}
+
+// model Category {
+//   id       Int    @id @default(autoincrement())
+//   name     String
+//   coverImg String
+//   shops    Shop[]
+// }
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  PROCESSING
+  CANCELLED
+  REFUNDED
+  EXPIRED
+  DECLINED
+}
+
+enum PaymentType {
+  MOBILE_MONEY
+  CARD
+  CASH_ON_DELIVERY
+  CRYPTO
+}
