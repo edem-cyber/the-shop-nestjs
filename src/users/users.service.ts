@@ -3,12 +3,25 @@ import { User } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+// import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllUsers(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  async getAllUsers(): Promise<any> {
+    try {
+      const users = await this.prisma.user.findMany();
+      const count = await this.prisma.user.count();
+
+      return {
+        count,
+        users,
+      };
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
@@ -25,6 +38,9 @@ export class UsersService {
       profilePicture,
     } = createUserDto;
     const dateOfBirthWithTime = `${dateOfBirth}T00:00:00.000Z`;
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     try {
       // check if user with email already exists
       const existingUser = await this.prisma.user.findUnique({
@@ -39,10 +55,10 @@ export class UsersService {
         throw new HttpException('User already exists', HttpStatus.CONFLICT);
       }
 
-      this.prisma.user.create({
+      return this.prisma.user.create({
         data: {
           email,
-          password,
+          password: hashedPassword,
           username,
           firstName,
           lastName,
@@ -57,6 +73,8 @@ export class UsersService {
           avatar: profilePicture,
         },
       });
+
+      // const payload = { email: existingUser.email, id: existingUser.id };
     } catch (error) {
       console.log(error);
       return error;
@@ -108,7 +126,7 @@ export class UsersService {
       profilePicture,
     } = updateUserDto;
     try {
-      return this.prisma.user.update({
+      const user = await this.prisma.user.update({
         where: {
           id,
         },
@@ -129,6 +147,18 @@ export class UsersService {
           avatar: profilePicture,
         },
       });
+
+      // const payload = {
+      //   id: user.id,
+      //   email: user.email,
+      //   firstName: user.firstName,
+      // };
+
+      // Generate token
+      // const token = await this.jwtService.sign(payload);
+
+      // Return the user and the token
+      return user;
     } catch (error) {
       console.log(error);
       return error;
@@ -150,18 +180,26 @@ export class UsersService {
     }
   }
 
-  // delelte all users and return the number of users deleted, total number of users left
-  async deleteAllUsers(): Promise<{
-    deletedUsers: number;
-    remainingUsers: number;
-  }> {
+  // delete all users
+  async deleteAllUsers(): Promise<any> {
     try {
-      const allUsers = await this.prisma.user.findMany();
-      const deletedUsers = await this.prisma.user.deleteMany();
-      return {
-        deletedUsers: deletedUsers.count,
-        remainingUsers: allUsers.length - deletedUsers.count,
-      };
+      return this.prisma.user.deleteMany();
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  }
+
+  // search user by username
+  async searchUserByUsername(username: string): Promise<User[]> {
+    try {
+      return this.prisma.user.findMany({
+        where: {
+          username: {
+            contains: username,
+          },
+        },
+      });
     } catch (error) {
       console.log(error);
       return error;
