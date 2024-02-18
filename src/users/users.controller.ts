@@ -147,12 +147,12 @@ export class UsersController {
     }
   }
 
-  // delelte all users and return the number of users deleted, total number of users left
+  // deleteAllUsers
   @Delete()
   @ApiOperation({ summary: 'Delete all users' })
   @ApiResponse({
     status: 200,
-    description: 'The users have been successfully deleted.',
+    description: 'All users have been successfully deleted.',
   })
   @ApiForbiddenResponse()
   @ApiBadRequestResponse()
@@ -160,6 +160,25 @@ export class UsersController {
   async deleteAllUsers() {
     try {
       return this.usersService.deleteAllUsers();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  //   search user by name
+  @Get('search')
+  @ApiOperation({ summary: 'Search user by name' })
+  @ApiQuery({ name: 'name', required: true })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully retrieved.',
+  })
+  @ApiForbiddenResponse()
+  @ApiBadRequestResponse()
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  async searchUserByUsername(@Query('username') username: string) {
+    try {
+      return this.usersService.searchUserByUsername(username);
     } catch (error) {
       console.log(error);
     }
