@@ -1,11 +1,11 @@
 import {
   Controller,
-  Get,
+  // Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
+  // Patch,
+  // Param,
+  // Delete,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/create-auth.dto';
