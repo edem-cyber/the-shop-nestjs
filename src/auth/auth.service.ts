@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { SignInDto } from './dto/create-auth.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
@@ -21,7 +25,8 @@ export class AuthService {
         },
       });
       if (!user) {
-        return 'User not found';
+        // return http exception
+        throw new NotFoundException('User not found');
       }
 
       const isPasswordValid = await bcrypt.compare(
@@ -30,7 +35,7 @@ export class AuthService {
       );
 
       if (!isPasswordValid) {
-        return 'Wrong password';
+        throw new UnauthorizedException('Invalid password');
       }
 
       const payload = { username: user.email, sub: user.id };
@@ -55,7 +60,7 @@ export class AuthService {
       if (user) {
         return user;
       } else {
-        return user;
+        throw new NotFoundException('User not found');
       }
     } catch (error) {
       return error;
