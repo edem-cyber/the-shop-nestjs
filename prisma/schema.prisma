@@ -51,6 +51,7 @@ model User {
   lastSeen            DateTime             @updatedAt
   email               String               @unique
   username            String               @unique
+  isLocked            Boolean              @default(false)
   firstName           String
   lastName            String
   password            String
