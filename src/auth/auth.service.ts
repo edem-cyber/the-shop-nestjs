@@ -1,5 +1,6 @@
 import {
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,6 +10,7 @@ import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtService } from '../jwt/jwt.service';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -63,7 +65,7 @@ export class AuthService {
         throw new NotFoundException('User not found');
       }
     } catch (error) {
-      return error;
+      throw new InternalServerErrorException();
     }
   }
 
@@ -71,5 +73,45 @@ export class AuthService {
     return await this.prismaService.user.findUnique({
       where: { username: payload.username },
     });
+  }
+
+  // sign up method
+  async signUp(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      const user = await this.prismaService.user.create({
+        data: {
+          email: createUserDto.email,
+          password: hashedPassword,
+          lastSeen: new Date(),
+          role: 'USER',
+          lastName: createUserDto.lastName,
+          firstName: createUserDto.firstName,
+          username: createUserDto.username,
+          bio: createUserDto.bio,
+          avatar: createUserDto.profilePicture,
+        },
+      });
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  }
+
+  // brute force attack prevention on more than 5 failed login attempts
+  async lockAccount(email: string): Promise<User> {
+    try {
+      const user = await this.prismaService.user.update({
+        where: {
+          email: email,
+        },
+        data: {
+          isLocked: true,
+        },
+      });
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 }
