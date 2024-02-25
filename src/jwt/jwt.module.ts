@@ -5,7 +5,7 @@ import { JwtService } from './jwt.service';
 @Module({
   imports: [
     NestJwtModule.register({
-      secret: 'COOLIO', // replace with your own secret key
+      secret: 'COOLIOTOKEN', // replace with your own secret key
       signOptions: { expiresIn: '1h' }, // token will expire in 1 hour
     }),
   ],

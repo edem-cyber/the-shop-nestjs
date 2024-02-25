@@ -6,10 +6,21 @@ export class JwtService {
   constructor(private readonly nestJwtService: NestJwtService) {}
 
   async sign(payload: any): Promise<string> {
-    return this.nestJwtService.sign(payload);
+    try {
+      console.log('PAYLOAD IN JWT SERVICE: ', payload);
+      return this.nestJwtService.sign(payload);
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
   }
 
   async verify(token: string): Promise<any> {
-    return this.nestJwtService.verify(token);
+    try {
+      return this.nestJwtService.verify(token);
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
   }
 }
