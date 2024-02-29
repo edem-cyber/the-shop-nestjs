@@ -38,8 +38,10 @@ enum UserRole {
 
 enum OrderStatus {
   PENDING
-  COOKING
-  COOKED
+  PACKAGING
+  ONTHEWAY_TO_PICKUP
+  ONTHEWAY_TO_DESTINATION
+  PACKAGED
   PICKEDUP
   DELIVERED
   CANCELLED
@@ -101,7 +103,7 @@ model RiderProfile {
 }
 
 model Shop {
-  id                 Int               @id @default(autoincrement())
+  id                 String            @id @default(uuid())
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
   name               String
@@ -132,7 +134,7 @@ model ClothingCategory {
 }
 
 model ClothingItem {
-  id                 Int                  @id @default(autoincrement())
+  id                 String               @id @default(uuid())
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   name               String
@@ -140,7 +142,7 @@ model ClothingItem {
   price              Float
   photo              String
   shop               Shop                 @relation(fields: [shopId], references: [id])
-  shopId             Int
+  shopId             String
   cart               CartItem[]
   options            ClothingItemOption[]
   orders             OrderItem[]
@@ -170,9 +172,9 @@ model Order {
   user           User          @relation(fields: [userId], references: [id])
   userId         String        @unique
   shop           Shop          @relation(fields: [shopId], references: [id])
-  shopId         Int
-  items          OrderItem[]
-  payment        Payment[]
+  shopId         String
+  productId          OrderItem[]
+  payment        Payment?
   RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
   riderProfileId Int?
 }
@@ -183,7 +185,7 @@ model OrderItem {
   updatedAt      DateTime     @updatedAt
   quantity       Int
   clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
-  clothingItemId Int
+  clothingItemId String
   order          Order        @relation(fields: [orderId], references: [id])
   orderId        Int
 }
@@ -198,7 +200,7 @@ model Payment {
   user      User           @relation(fields: [userId], references: [id])
   userId    String         @unique
   order     Order          @relation(fields: [orderId], references: [id])
-  orderId   Int
+  orderId   Int            @unique
 }
 
 model Address {
@@ -225,7 +227,7 @@ model CartItem {
   updatedAt      DateTime     @updatedAt
   quantity       Int
   clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
-  clothingItemId Int
+  clothingItemId String
   cart           Cart         @relation(fields: [cartId], references: [id])
   cartId         Int
 }
@@ -237,7 +239,7 @@ model Favourite {
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique
   shop      Shop     @relation(fields: [shopId], references: [id])
-  shopId    Int
+  shopId    String
 }
 
 model ClothingItemLike {
@@ -247,7 +249,7 @@ model ClothingItemLike {
   user           User         @relation(fields: [userId], references: [id])
   userId         String       @unique
   clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
-  clothingItemId Int
+  clothingItemId String
 }
 
 model Comment {
@@ -258,7 +260,7 @@ model Comment {
   user           User         @relation(fields: [userId], references: [id])
   userId         String       @unique
   clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
-  clothingItemId Int
+  clothingItemId String
 }
 
 model Notification {
@@ -290,7 +292,7 @@ model ClothingItemOption {
   extra          Float
   choices        Choice[]
   clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
-  clothingItemId Int
+  clothingItemId String
 }
 
 model Choice {
@@ -324,7 +326,7 @@ model ClothingItemReview {
   user           User         @relation(fields: [userId], references: [id])
   userId         String       @unique
   clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
-  clothingItemId Int
+  clothingItemId String
 }
 
 model ShopReview {
@@ -336,7 +338,7 @@ model ShopReview {
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique
   shop      Shop     @relation(fields: [shopId], references: [id])
-  shopId    Int
+  shopId    String
 }
 
 model RiderRating {
@@ -358,7 +360,7 @@ model ClothingItemRating {
   user           User         @relation(fields: [userId], references: [id])
   userId         String       @unique
   clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
-  clothingItemId Int
+  clothingItemId String
 }
 
 model ShopRating {
@@ -369,7 +371,7 @@ model ShopRating {
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique
   shop      Shop     @relation(fields: [shopId], references: [id])
-  shopId    Int
+  shopId    String
 }
 
 // model Category {

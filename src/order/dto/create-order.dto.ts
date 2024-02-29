@@ -1,9 +1,11 @@
+import { OrderStatus } from '@prisma/client';
+
 export class CreateOrderDto {
-  readonly id: string;
   userId: string;
   productId: string;
   quantity: number;
+  status: OrderStatus;
+  shopId: string;
+
   totalPrice: number;
-  readonly createdAt: Date;
-  updatedAt: Date;
 }
