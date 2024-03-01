@@ -87,7 +87,7 @@ model User {
 }
 
 model RiderProfile {
-  id        Int           @id @default(autoincrement())
+  id        String        @id @default(uuid())
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   user      User          @relation(fields: [userId], references: [id])
@@ -155,7 +155,7 @@ model ClothingItem {
 }
 
 model ShopCategory {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   name      String
@@ -164,7 +164,7 @@ model ShopCategory {
 }
 
 model Order {
-  id             Int           @id @default(autoincrement())
+  id             String        @id @default(uuid())
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   total          Float
@@ -173,25 +173,25 @@ model Order {
   userId         String        @unique
   shop           Shop          @relation(fields: [shopId], references: [id])
   shopId         String
-  productId          OrderItem[]
+  orderItems     OrderItem[]
   payment        Payment?
   RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
-  riderProfileId Int?
+  riderProfileId String?
 }
 
 model OrderItem {
-  id             Int          @id @default(autoincrement())
+  id             String       @id @default(uuid())
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   quantity       Int
   clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
   clothingItemId String
   order          Order        @relation(fields: [orderId], references: [id])
-  orderId        Int
+  orderId        String
 }
 
 model Payment {
-  id        Int            @id @default(autoincrement())
+  id        String         @id @default(uuid())
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   total     Float
@@ -200,11 +200,11 @@ model Payment {
   user      User           @relation(fields: [userId], references: [id])
   userId    String         @unique
   order     Order          @relation(fields: [orderId], references: [id])
-  orderId   Int            @unique
+  orderId   String         @unique
 }
 
 model Address {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   address   String
@@ -222,7 +222,7 @@ model Cart {
 }
 
 model CartItem {
-  id             Int          @id @default(autoincrement())
+  id             String       @id @default(uuid())
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   quantity       Int
@@ -233,7 +233,7 @@ model CartItem {
 }
 
 model Favourite {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
@@ -243,7 +243,7 @@ model Favourite {
 }
 
 model ClothingItemLike {
-  id             Int          @id @default(autoincrement())
+  id             String       @id @default(uuid())
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   user           User         @relation(fields: [userId], references: [id])
@@ -253,7 +253,7 @@ model ClothingItemLike {
 }
 
 model Comment {
-  id             Int          @id @default(autoincrement())
+  id             String       @id @default(uuid())
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   text           String
@@ -264,7 +264,7 @@ model Comment {
 }
 
 model Notification {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   text      String
@@ -273,7 +273,7 @@ model Notification {
 }
 
 model Message {
-  id             Int           @id @default(autoincrement())
+  id             String        @id @default(uuid())
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   text           String
@@ -281,11 +281,11 @@ model Message {
   userId         String        @unique
   roomId         Int
   RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
-  riderProfileId Int?
+  riderProfileId String?
 }
 
 model ClothingItemOption {
-  id             Int          @id @default(autoincrement())
+  id             String       @id @default(uuid())
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   name           String
@@ -302,11 +302,11 @@ model Choice {
   name                 String
   price                Float
   clothingItemOption   ClothingItemOption @relation(fields: [clothingItemOptionId], references: [id])
-  clothingItemOptionId Int
+  clothingItemOptionId String
 }
 
 model RiderReview {
-  id             Int           @id @default(autoincrement())
+  id             String        @id @default(uuid())
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   text           String
@@ -314,11 +314,11 @@ model RiderReview {
   user           User          @relation(fields: [userId], references: [id])
   userId         String        @unique
   RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
-  riderProfileId Int?
+  riderProfileId String?
 }
 
 model ClothingItemReview {
-  id             Int          @id @default(autoincrement())
+  id             String       @id @default(uuid())
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   text           String
@@ -330,7 +330,7 @@ model ClothingItemReview {
 }
 
 model ShopReview {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   text      String
@@ -342,18 +342,18 @@ model ShopReview {
 }
 
 model RiderRating {
-  id             Int          @id @default(autoincrement())
+  id             String       @id @default(uuid())
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   rating         Float
   user           User         @relation(fields: [userId], references: [id])
   userId         String       @unique
   RiderProfile   RiderProfile @relation(fields: [riderProfileId], references: [id])
-  riderProfileId Int
+  riderProfileId String
 }
 
 model ClothingItemRating {
-  id             Int          @id @default(autoincrement())
+  id             String       @id @default(uuid())
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   rating         Float
@@ -364,7 +364,7 @@ model ClothingItemRating {
 }
 
 model ShopRating {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   rating    Float

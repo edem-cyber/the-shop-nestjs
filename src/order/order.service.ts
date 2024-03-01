@@ -19,10 +19,16 @@ export class OrderService {
           total: totalPrice,
           createdAt: new Date(),
           updatedAt: new Date(),
-          items: {
+          orderItem: {
             create: {
-              clothingItemId: productId,
+              createdAt: new Date(),
               quantity,
+              clothingItem: {
+                connect: {
+                  id: productId,
+                },
+              },
+              clothingItemId: productId,
             },
           },
           user: {
@@ -33,6 +39,11 @@ export class OrderService {
           userId,
           shopId: shopId,
           shop: {
+            connect: {
+              id: shopId,
+            },
+          },
+          payment: {
             connect: {
               id: shopId,
             },
@@ -51,8 +62,20 @@ export class OrderService {
     return `This action returns a #${id} order`;
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  updateOrderStatus(id: number, updateOrderDto: UpdateOrderDto) {
+    try {
+      const { status } = updateOrderDto;
+      const order = this.prisma.order.update({
+        where: {
+          id,
+        },
+        data: {
+          status,
+          updatedAt: new Date(),
+        },
+      });
+      return order;
+    } catch (error) {}
   }
 
   remove(id: number) {
