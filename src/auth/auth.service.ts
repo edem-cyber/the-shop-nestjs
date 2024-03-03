@@ -9,8 +9,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { JwtService } from '../jwt/jwt.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -45,7 +45,8 @@ export class AuthService {
         sub: user.id,
       };
       console.log('PAYLOAD IN SIGNIN: ', payload);
-      const token = this.jwtService.sign(payload);
+      const token = this.jwtService.signAsync(payload);
+      console.log('TOKEN IN SIGNIN: ', { token, user });
 
       return {
         token,
