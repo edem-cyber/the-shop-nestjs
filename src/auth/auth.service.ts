@@ -45,7 +45,9 @@ export class AuthService {
         sub: user.id,
       };
       console.log('PAYLOAD IN SIGNIN: ', payload);
-      const token = this.jwtService.signAsync(payload);
+      const token = await this.jwtService.signAsync(payload, {
+        secret: 'COOLIOTOKEN',
+      });
       console.log('TOKEN IN SIGNIN: ', { token, user });
 
       return {
