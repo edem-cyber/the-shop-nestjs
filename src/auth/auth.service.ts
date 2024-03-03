@@ -45,9 +45,12 @@ export class AuthService {
         sub: user.id,
       };
       console.log('PAYLOAD IN SIGNIN: ', payload);
-      const token = await this.jwtService.signAsync(payload, {
+      const token = this.jwtService.sign(payload, {
         secret: 'COOLIOTOKEN',
       });
+      if (!token) {
+        throw new InternalServerErrorException();
+      }
       console.log('TOKEN IN SIGNIN: ', { token, user });
 
       return {
@@ -55,7 +58,7 @@ export class AuthService {
         user,
       };
     } catch (error) {
-      return error;
+      return new InternalServerErrorException();
     }
   }
 
@@ -121,4 +124,20 @@ export class AuthService {
       throw new InternalServerErrorException();
     }
   }
+
+  // async signOut(signOut: SignOutDto): Promise<User> {
+  //   try {
+  //     const user = await this.prismaService.user.update({
+  //       where: {
+  //         email: signOut.email,
+  //       },
+  //       data: {
+  //         lastSeen: new Date(),
+  //       },
+  //     });
+  //     return user;
+  //   } catch (error) {
+  //     throw new InternalServerErrorException();
+  //   }
+  // }
 }
